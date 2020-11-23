@@ -1,11 +1,13 @@
 use std::fs::File;
 use std::io::Read;
+use std::path::Path;
 
 const BUF_SZ: usize = 5 * 1024 * 1024;
 
-pub fn sync_benchmark(mut f: File) {
+pub fn sync_benchmark(path: &Path) {
     use std::sync::mpsc::sync_channel;
 
+    let mut f = File::open(path).unwrap();
     let mut md5 = md5::Context::new();
     let (tx, rx) = sync_channel(1);
 
@@ -29,14 +31,14 @@ pub fn sync_benchmark(mut f: File) {
     }
 }
 
-async fn async_std_benchmark_run(f: File) {
+async fn async_std_benchmark_run(path: &Path) {
     use async_std::fs::File;
     use async_std::task;
     use async_std::io::ReadExt;
     use async_channel::bounded;
 
     let mut md5 = md5::Context::new();
-    let mut f: File = f.into();
+    let mut f = File::open(path).await.unwrap();
     let (tx, rx) = bounded(1);
 
     task::spawn(async move {
@@ -63,13 +65,13 @@ async fn async_std_benchmark_run(f: File) {
     }
 }
 
-pub fn async_std_benchmark(f: File) {
+pub fn async_std_benchmark(path: &Path) {
     use async_std::task;
 
-    task::block_on(async_std_benchmark_run(f));
+    task::block_on(async_std_benchmark_run(path));
 }
 
-async fn tokio_benchmark_run(f: File) {
+async fn tokio_benchmark_run(path: &Path) {
     use tokio::{
         fs::File,
         io::AsyncReadExt,
@@ -77,7 +79,7 @@ async fn tokio_benchmark_run(f: File) {
     };
 
     let mut md5 = md5::Context::new();
-    let mut f: File = f.into();
+    let mut f = File::open(path).await.unwrap();
     let (tx, mut rx) = channel(1);
 
     tokio::spawn(async move {
@@ -100,7 +102,7 @@ async fn tokio_benchmark_run(f: File) {
     }
 }
 
-pub fn tokio_benchmark(f: File) {
+pub fn tokio_benchmark(path: &Path) {
     let rt = tokio::runtime::Runtime::new().unwrap();
-    rt.block_on(tokio_benchmark_run(f));
+    rt.block_on(tokio_benchmark_run(path));
 }

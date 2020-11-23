@@ -8,7 +8,7 @@ where an md5 hash is computed.
 On a dual Intel i5-3340M, Linux 4.15 (Mint):
 ```console
 $ cargo bench
-md5/Synchronous         time:   [148.33 ms 149.13 ms 150.20 ms]
-md5/async-std           time:   [146.35 ms 146.81 ms 147.30 ms]
-md5/tokio               time:   [1.2348  s 1.2609  s 1.2890  s]
+md5/Synchronous         time:   [145.19 ms 145.45 ms 145.72 ms]
+md5/async-std           time:   [143.16 ms 143.36 ms 143.59 ms]
+md5/tokio               time:   [728.15 ms 730.27 ms 732.42 ms]
 ```

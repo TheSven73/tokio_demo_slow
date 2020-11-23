@@ -1,8 +1,8 @@
 use criterion::{criterion_group, criterion_main, Criterion};
 use tempfile::NamedTempFile;
 use std::io::Write;
-use std::fs::File;
 use rand::Rng;
+use std::path::Path;
 
 use tokio_slow_demo::{
     sync_benchmark,
@@ -28,15 +28,14 @@ fn bench_simple(c: &mut Criterion) {
     let tmp = make_random_tmpfile(50);
 
     let tests = vec![
-        ("Synchronous", sync_benchmark as fn(File)),
+        ("Synchronous", sync_benchmark as fn(&Path)),
         ("async-std",   async_std_benchmark),
         ("tokio",       tokio_benchmark),
     ];
 
     for (name, function) in tests {
         group.bench_function(name, |b| b.iter(|| {
-                let f = tmp.reopen().unwrap();
-                function(f);
+                function(tmp.path());
             })
         );
     }
