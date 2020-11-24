@@ -1,7 +1,13 @@
 use std::fs::File;
 use std::io::Read;
 
-const BUF_SZ: usize = 5 * 1024 * 1024;
+fn create_buf() -> Vec<u8> {
+    let mut buf = Vec::with_capacity(5 * 1024 * 1024);
+    unsafe {
+        buf.set_len(buf.capacity());
+    }
+    buf
+}
 
 pub fn sync_benchmark(mut f: File) {
     use std::sync::mpsc::sync_channel;
@@ -11,7 +17,7 @@ pub fn sync_benchmark(mut f: File) {
 
     std::thread::spawn(move || {
         loop {
-            let mut buf = vec![0u8; BUF_SZ];
+            let mut buf = create_buf();
             let bytes_read = f.read(&mut buf).unwrap();
             tx.send((buf, bytes_read)).unwrap();
             if bytes_read == 0 {
@@ -41,7 +47,7 @@ async fn async_std_benchmark_run(f: File) {
 
     task::spawn(async move {
         loop {
-            let mut buf = vec![0u8; BUF_SZ];
+            let mut buf = create_buf();
             let bytes_read = f.read(&mut buf).await.unwrap();
             tx.send((buf, bytes_read)).await.unwrap();
             if bytes_read == 0 {
@@ -82,7 +88,7 @@ async fn tokio_benchmark_run(f: File) {
 
     tokio::spawn(async move {
         loop {
-            let mut buf = vec![0u8; BUF_SZ];
+            let mut buf = create_buf();
             let bytes_read = f.read(&mut buf).await.unwrap();
             tx.send((buf, bytes_read)).await.unwrap();
             if bytes_read == 0 {
@@ -118,7 +124,7 @@ async fn smol_benchmark_run(f: File) {
 
     smol::spawn(async move {
         loop {
-            let mut buf = vec![0u8; BUF_SZ];
+            let mut buf = create_buf();
             let bytes_read = f.read(&mut buf).await.unwrap();
             tx.send((buf, bytes_read)).await.unwrap();
             if bytes_read == 0 {
