@@ -106,3 +106,41 @@ pub fn tokio_benchmark(path: &Path) {
     let rt = tokio::runtime::Runtime::new().unwrap();
     rt.block_on(tokio_benchmark_run(path));
 }
+
+async fn smol_benchmark_run(path: &Path) {
+    use smol::{
+        fs::File,
+        io::AsyncReadExt,
+        channel::bounded,
+    };
+
+    let mut md5 = md5::Context::new();
+    let mut f = File::open(path).await.unwrap();
+    let (tx, rx) = bounded(1);
+
+    smol::spawn(async move {
+        loop {
+            let mut buf = vec![0u8; BUF_SZ];
+            let bytes_read = f.read(&mut buf).await.unwrap();
+            tx.send((buf, bytes_read)).await.unwrap();
+            if bytes_read == 0 {
+                break;
+            }
+        }
+    }).detach();
+
+    loop {
+        let (buf, len) = rx.recv().await.unwrap();
+        if len == 0 {
+            break;
+        }
+        md5 = smol::unblock(move || {
+            md5.consume(&buf[..len]);
+            md5
+        }).await;
+    }
+}
+
+pub fn smol_benchmark(path: &Path) {
+    smol::block_on(smol_benchmark_run(path));
+}
