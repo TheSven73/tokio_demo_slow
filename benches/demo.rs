@@ -8,6 +8,7 @@ use tokio_slow_demo::{
     sync_benchmark,
     async_std_benchmark,
     tokio_benchmark,
+    smol_benchmark,
 };
 
 fn make_random_tmpfile(size_mb: usize) -> NamedTempFile {
@@ -31,6 +32,7 @@ fn bench_simple(c: &mut Criterion) {
         ("Synchronous", sync_benchmark as fn(File)),
         ("async-std",   async_std_benchmark),
         ("tokio",       tokio_benchmark),
+        ("smol",        smol_benchmark),
     ];
 
     for (name, function) in tests {

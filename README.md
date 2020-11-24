@@ -11,4 +11,5 @@ $ cargo bench
 md5/Synchronous         time:   [148.33 ms 149.13 ms 150.20 ms]
 md5/async-std           time:   [146.35 ms 146.81 ms 147.30 ms]
 md5/tokio               time:   [1.2348  s 1.2609  s 1.2890  s]
+md5/smol                time:   [192.35 ms 195.45 ms 198.22 ms]
 ```
