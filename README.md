@@ -1,3 +1,5 @@
+**Update: the performance issue has now been addressed**
+
 This crate demonstrates a possible performance issue with tokio,
 compared to synchronous code, and to `async-std`.
 
